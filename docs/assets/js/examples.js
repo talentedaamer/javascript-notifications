@@ -55,6 +55,7 @@
         // });
         // document.getElementById("test").addEventListener('click', function(e) {
             javascriptNotifications.standard("title...", "content...");
+            javascriptNotifications.standard("title...", "content...");
         // });
 
 

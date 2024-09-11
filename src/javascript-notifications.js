@@ -30,6 +30,7 @@
     var color_btn_text = '';
 
     var notification_container;
+    var notification_element;
     var notification_id = 0;
     var notification_content;
 
@@ -138,6 +139,52 @@
         return notificationEl;
     }
 
+    function createHtmlElement(target = null, options = {}) {
+        var defaults = { tag: 'div', classList: [], styleList: {} }
+        var options = Object.assign({}, defaults, options);
+
+        var tag = options.tag;
+        var classList = options.classList;
+        var styleList = options.styleList;
+
+        element = document.createElement(tag);
+
+        
+
+        if (Array.isArray(classList) && classList.length > 0) {
+            // element.classList.add(...classList);
+            for (var i = 0; i < classList.length; i++) {
+                var className = classList[i];
+                if (isValidClassName(className)) {
+                    element.classList.add(className);
+                }
+            }
+        }
+        
+
+        if (styleList && typeof styleList === 'object' && !Array.isArray(styleList)) {
+            var style_keys = Object.keys(styleList);
+            for (var i = 0; i < style_keys.length; i++) {
+                var style_prop = style_keys[i];
+                var style_value = styleList[style_prop];
+                if (typeof style_prop === 'string' && (typeof style_value === 'string' || typeof style_value === 'number')) {
+                    element.style[style_prop] = style_value;
+                }
+            }
+        }
+
+        console.log("options", element)
+        return;
+
+        if (target instanceof HTMLElement) {
+            if (document.contains(target)) {
+                target.appendChild(element);
+            }
+        }
+
+        return element;
+    }
+
     /**
      * get notifications container by options.containerId or
      * if create is true, create and return new notifications container
@@ -170,6 +217,23 @@
     //     return false;
     // }
 
+    function isValidClassName(className) {
+        return typeof className === 'string' && /^[a-zA-Z0-9-_]+$/.test(className);
+    }
+
+    function sanitize(text = '') {
+        return text
+            .replace(/&/g, '&amp;')    // Escape ampersand
+            .replace(/"/g, '&quot;')   // Escape double quotes
+            .replace(/'/g, '&#39;')    // Escape single quotes
+            .replace(/</g, '&lt;')     // Escape less than sign
+            .replace(/>/g, '&gt;')     // Escape greater than sign
+            .replace(/\(/g, '&#40;')   // Escape opening parenthesis
+            .replace(/\)/g, '&#41;')   // Escape closing parenthesis
+            .replace(/\//g, '&#47;')   // Escape forward slash
+            .replace(/\\/g, '&#92;');  // Escape backslash
+    }
+
     function notify(args = {}) {
         var options = getOptions();
 
@@ -191,6 +255,23 @@
         notification_container = getContainer(options, true);
 
         notification_element = createNotificationEl(notification_container, options);
+
+        test = createHtmlElement(null, {
+            classList: ["class-1", "class-2", "!cla"]
+        });
+
+        console.log(">> test", test);
+
+        // const userInput = '<script>alert("XSS attack!")</script>';
+        // const safeText = sanitize(userInput);
+
+        // console.log(">> regix", /^[a-zA-Z0-9-_]+$/.test('_class-name'));
+
+        // var $toastElement = $('<div/>');
+        // var $titleElement = $('<div/>');
+        // var $messageElement = $('<div/>');
+        // var $progressElement = $('<div/>');
+        // var $closeElement = $(options.closeHtml);
 
         console.log(">> notification_container", notification_container);
         console.log(">> notification_element", notification_element);
