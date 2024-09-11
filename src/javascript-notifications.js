@@ -62,15 +62,15 @@
             title: '',
             content: '',
             titleClass: 'jsn-title',
-            contentClass: 'jsn-message',
-            iconClass: 'jsn-info',
+            contentClass: 'jsn-message 01 class-1 !!_ ca!',
+            iconClass: 'jsn-info 01 class-1 !!_ ca!',
             targetElement: 'body',
             containerId: 'jsn-container',
-            containerClass: 'jsn-container',
-            notificationClass: 'jsn-notification',
-            positionClass: 'jsn-top-center',
+            containerClass: 'jsn-container 01 class-1 !!_ ca!',
+            notificationClass: 'jsn-notification 01 class-1 !!_ ca!',
+            positionClass: 'jsn-top-center 01 class-1 !!_ ca!',
             closeHtml: '<button type="button">&times;</button>',
-            closeClass: 'toast-close-button',
+            closeClass: 'toast-close-button 01 class-1 !!_ ca!',
             rtl: false
         }
     }
@@ -106,7 +106,7 @@
 
         // append id and classes to the element
         containerEl.id = options.containerId;
-        containerEl.classList.add(options.containerClass, options.positionClass);
+        // containerEl.classList.add(options.containerClass, options.positionClass);
 
         containerEl.style.padding       = '10px';
         containerEl.style.position      = 'fixed';
@@ -123,58 +123,42 @@
         return containerEl;
     }
 
-    function createNotificationEl(target, options) {
-        var notificationEl = document.createElement('div');
-        notificationEl.classList.add(options.notificationClass);
+    function createHtmlElement(args = {}, target = null) {
+        var defaults = {
+            id: null,
+            tag: 'div',
+            classList: [],
+            styleList: {}
+        }
+        var options = Object.assign({}, defaults, args);
 
-        notificationEl.style.background     = color_bg;
-        notificationEl.style.padding        = '15px';
-        notificationEl.style.margin         = '0 0 10px';
-        notificationEl.style.border         = '1px solid ' + color_text;
-        notificationEl.style.borderRadius   = '5px';
-        notificationEl.style.boxShadow      = '0 2px 6px rgba(0, 0, 0, 0.2)';
-
-        target.appendChild(notificationEl);
-
-        return notificationEl;
-    }
-
-    function createHtmlElement(target = null, options = {}) {
-        var defaults = { tag: 'div', classList: [], styleList: {} }
-        var options = Object.assign({}, defaults, options);
-
+        var id = options.id;
         var tag = options.tag;
         var classList = options.classList;
         var styleList = options.styleList;
 
-        element = document.createElement(tag);
+        var element = document.createElement(tag);
 
-        
-
-        if (Array.isArray(classList) && classList.length > 0) {
-            // element.classList.add(...classList);
-            for (var i = 0; i < classList.length; i++) {
-                var className = classList[i];
-                if (isValidClassName(className)) {
-                    element.classList.add(className);
-                }
-            }
+        if (id) {
+            element.id = id;
         }
-        
+
+        arrToClassList(classList).forEach(function (className) {
+            element.classList.add(className);
+        });
 
         if (styleList && typeof styleList === 'object' && !Array.isArray(styleList)) {
             var style_keys = Object.keys(styleList);
-            for (var i = 0; i < style_keys.length; i++) {
+            style_keys.forEach(function (key, i) {
                 var style_prop = style_keys[i];
                 var style_value = styleList[style_prop];
-                if (typeof style_prop === 'string' && (typeof style_value === 'string' || typeof style_value === 'number')) {
-                    element.style[style_prop] = style_value;
+                if (typeof style_prop === 'string' && isStringOrNumber(style_value)) {
+                    if (style_prop in element.style) {
+                        element.style[style_prop] = style_value;
+                    }
                 }
-            }
+            });
         }
-
-        console.log("options", element)
-        return;
 
         if (target instanceof HTMLElement) {
             if (document.contains(target)) {
@@ -210,12 +194,38 @@
         return container;
     }
 
-    // function toBoolean(strOrBool) {
-    //     if (strOrBool === true || strOrBool === 'true') {
-    //         return true;
-    //     }
-    //     return false;
-    // }
+    function strToBoolean(str) {
+        if (strOrBool === true || strOrBool === 'true') {
+            return true;
+        }
+        return false;
+    }
+
+    function strToArray(str, separator = " ") {
+        var arr = [];
+        if (typeof str === 'string') {
+            arr = str.split(separator);
+        }
+
+        return arr;
+    }
+
+    function arrToClassList(arr) {
+        var classList = [];
+        if (Array.isArray(arr) && arr.length > 0) {
+            arr.forEach( function (item) {
+                if (isValidClassName(item)) {
+                    classList.push(item);
+                }
+            });
+        }
+
+        return classList;
+    }
+
+    function isStringOrNumber(value) {
+        return typeof value === 'string' || typeof value === 'number';
+    }
 
     function isValidClassName(className) {
         return typeof className === 'string' && /^[a-zA-Z0-9-_]+$/.test(className);
@@ -254,13 +264,29 @@
 
         notification_container = getContainer(options, true);
 
-        notification_element = createNotificationEl(notification_container, options);
+        // notificationEl.style.background     = color_bg;
+        // notificationEl.style.padding        = '15px';
+        // notificationEl.style.margin         = '0 0 10px';
+        // notificationEl.style.border         = '1px solid ' + color_text;
+        // notificationEl.style.borderRadius   = '5px';
+        // notificationEl.style.boxShadow      = '0 2px 6px rgba(0, 0, 0, 0.2)';
 
-        test = createHtmlElement(null, {
-            classList: ["class-1", "class-2", "!cla"]
-        });
+        // target.appendChild(notificationEl);
 
-        console.log(">> test", test);
+        // return notificationEl;
+
+        notification_element = createHtmlElement({
+            classList: strToArray(options.notificationClass),
+            styleList: {
+                background: color_bg,
+                padding: '15px',
+                margin: '0 0 10px',
+                border: '1px solid ' + color_text,
+                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)'
+            }
+        }, notification_container);
+
+        console.log(">> notification_element", notification_element);
 
         // const userInput = '<script>alert("XSS attack!")</script>';
         // const safeText = sanitize(userInput);
