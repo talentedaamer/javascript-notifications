@@ -32,7 +32,14 @@
     var notification_container;
     var notification_element;
     var notification_id = 0;
+
+    var title_element;
+    var notification_title;
+    var content_element;
     var notification_content;
+    var close_element;
+    var notification_close;
+    
 
     const notificationType = Object.freeze({
         STANDARD: 'standard',
@@ -123,19 +130,22 @@
         return containerEl;
     }
 
-    function createHtmlElement(args = {}, target = null) {
+    function createHtmlElement(args = {}, id = null, target = null) {
         var defaults = {
-            id: null,
             tag: 'div',
             classList: [],
             styleList: {}
         }
         var options = Object.assign({}, defaults, args);
 
-        var id = options.id;
         var tag = options.tag;
         var classList = options.classList;
         var styleList = options.styleList;
+
+        var container = document.getElementById(id);
+        if (container) {
+            return container
+        }
 
         var element = document.createElement(tag);
 
@@ -160,10 +170,12 @@
             });
         }
 
+        if (typeof target === 'string') {
+            target = document.querySelector(target);
+        }
+        
         if (target instanceof HTMLElement) {
-            if (document.contains(target)) {
-                target.appendChild(element);
-            }
+            target.appendChild(element);
         }
 
         return element;
@@ -261,19 +273,19 @@
         }
 
         notification_id++;
-
-        notification_container = getContainer(options, true);
-
-        // notificationEl.style.background     = color_bg;
-        // notificationEl.style.padding        = '15px';
-        // notificationEl.style.margin         = '0 0 10px';
-        // notificationEl.style.border         = '1px solid ' + color_text;
-        // notificationEl.style.borderRadius   = '5px';
-        // notificationEl.style.boxShadow      = '0 2px 6px rgba(0, 0, 0, 0.2)';
-
-        // target.appendChild(notificationEl);
-
-        // return notificationEl;
+    
+        // containerEl.classList.add(options.containerClass, options.positionClass);
+        notification_container = createHtmlElement({
+            classList: strToArray(options.containerClass),
+            styleList: {
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+                padding: '10px',
+                position: 'fixed',
+            }
+        }, options.containerId, options.targetElement);
 
         notification_element = createHtmlElement({
             classList: strToArray(options.notificationClass),
@@ -284,18 +296,38 @@
                 border: '1px solid ' + color_text,
                 boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)'
             }
-        }, notification_container);
+        }, null, notification_container);
 
-        console.log(">> notification_element", notification_element);
+        if (args.title) {
+            title_element = createHtmlElement({classList: strToArray(options.titleClass)}, null, notification_element);
+            title_element.append(args.title);
+            // notification_element.append(title_element);
+        }
+
+        if (args.content) {
+            content_element = createHtmlElement({classList: strToArray(options.contentClass)}, null, notification_element);
+            content_element.append(args.content);
+            // notification_element.append(content_element);
+        }
+
+        close_element = createHtmlElement({classList: strToArray(options.closeClass)}, null, notification_element);
+        close_element.innerHTML = settings.closeHtml;
+        console.log(">> notification_id", notification_id);
+        close_element.addEventListener('click', function () {
+            console.log(">> close", notification_id);
+        });
+        
+        // notification_element.append(close_element);
+        
+
+        // if (options.closeButton) {
+        //     $closeElement.addClass(options.closeClass).attr('role', 'button');
+        //     $toastElement.prepend($closeElement);
+        // }
 
         // const userInput = '<script>alert("XSS attack!")</script>';
         // const safeText = sanitize(userInput);
 
-        // console.log(">> regix", /^[a-zA-Z0-9-_]+$/.test('_class-name'));
-
-        // var $toastElement = $('<div/>');
-        // var $titleElement = $('<div/>');
-        // var $messageElement = $('<div/>');
         // var $progressElement = $('<div/>');
         // var $closeElement = $(options.closeHtml);
 
