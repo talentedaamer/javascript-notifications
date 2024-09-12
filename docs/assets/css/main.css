@@ -675,3 +675,8 @@ section,
 .side-nav-wrapper ul.nav.nav-list li.no-b-l a {
   box-shadow: none;
 }
+
+
+.jsn-notification {
+  background-color: #F0DB4F !important;
+}

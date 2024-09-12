@@ -33,8 +33,6 @@
     var notification_element;
     var notification_id = 0;
 
-    var title_element;
-    var notification_title;
     var content_element;
     var notification_content;
     var close_element;
@@ -66,28 +64,23 @@
 
     function getOptions() {
         return {
-            title: '',
             content: '',
-            titleClass: 'jsn-title',
-            contentClass: 'jsn-message 01 class-1 !!_ ca!',
-            iconClass: 'jsn-info 01 class-1 !!_ ca!',
+            contentClass: 'jsn-message',
+            positionClass: 'jsn-top-center',
             targetElement: 'body',
             containerId: 'jsn-container',
-            containerClass: 'jsn-container 01 class-1 !!_ ca!',
-            notificationClass: 'jsn-notification 01 class-1 !!_ ca!',
-            positionClass: 'jsn-top-center 01 class-1 !!_ ca!',
+            containerClass: 'jsn-container',
+            notificationClass: 'jsn-notification',
             closeHtml: '<button type="button">&times;</button>',
-            closeClass: 'toast-close-button 01 class-1 !!_ ca!',
+            closeClass: 'toast-close-button',
             rtl: false
         }
     }
 
-    function standard(title, content, optionsOverride) {
+    function standard(content, optionsOverride) {
         return notify({
             type: notificationType.STANDARD,
-            title: title,
             content: content,
-            iconClass: 'jsn-error',
             optionsOverride: optionsOverride,
         });
     }
@@ -101,34 +94,7 @@
     function error() {};
     function info() {};
 
-    /**
-     * create and return notifications container element
-     *
-     * @param options
-     * @returns {HTMLDivElement}
-     */
-    function createContainer(options) {
-        // create html element <div>
-        var containerEl = document.createElement('div');
 
-        // append id and classes to the element
-        containerEl.id = options.containerId;
-        // containerEl.classList.add(options.containerClass, options.positionClass);
-
-        containerEl.style.padding       = '10px';
-        containerEl.style.position      = 'fixed';
-        containerEl.style.top           = '0px';
-        containerEl.style.left          = '0px';
-        containerEl.style.right         = '0px';
-        containerEl.style.zIndex        = '1000';
-
-        // find the targetElement in the dom
-        const target = document.querySelector(options.targetElement);
-
-        target.appendChild(containerEl);
-
-        return containerEl;
-    }
 
     function createHtmlElement(args = {}, id = null, target = null) {
         var defaults = {
@@ -181,6 +147,20 @@
         return element;
     }
 
+    function createContainer(options) {
+        return createHtmlElement({
+            classList: strToArray(options.containerClass + ' ' + options.positionClass),
+            styleList: {
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+                padding: '10px',
+                position: 'fixed',
+            }
+        }, options.containerId, options.targetElement);
+    }
+
     /**
      * get notifications container by options.containerId or
      * if create is true, create and return new notifications container
@@ -219,7 +199,7 @@
             arr = str.split(separator);
         }
 
-        return arr;
+        return [...new Set(arr)];
     }
 
     function arrToClassList(arr) {
@@ -259,11 +239,11 @@
     function notify(args = {}) {
         var options = getOptions();
 
-        var iconClass = args.iconClass || options.iconClass;
+        // var iconClass = args.iconClass || options.iconClass;
 
         if (typeof args.optionsOverride !== 'undefined') {
             options = Object.assign({}, options, args.optionsOverride);
-            iconClass = args.optionsOverride.iconClass || iconClass;
+            // iconClass = args.optionsOverride.iconClass || iconClass;
         }
 
         if (args.content === notification_content) {
@@ -275,18 +255,9 @@
         notification_id++;
     
         // containerEl.classList.add(options.containerClass, options.positionClass);
-        notification_container = createHtmlElement({
-            classList: strToArray(options.containerClass),
-            styleList: {
-                top: 0,
-                left: 0,
-                right: 0,
-                zIndex: 1000,
-                padding: '10px',
-                position: 'fixed',
-            }
-        }, options.containerId, options.targetElement);
-
+        notification_container = createContainer(options);
+        // console.log(">> 🍉", notification_container);
+        
         notification_element = createHtmlElement({
             classList: strToArray(options.notificationClass),
             styleList: {
@@ -294,45 +265,56 @@
                 padding: '15px',
                 margin: '0 0 10px',
                 border: '1px solid ' + color_text,
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)'
+                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
             }
         }, null, notification_container);
 
-        if (args.title) {
-            title_element = createHtmlElement({classList: strToArray(options.titleClass)}, null, notification_element);
-            title_element.append(args.title);
-            // notification_element.append(title_element);
-        }
+        // var content_wrap_element = createHtmlElement({
+        //     classList: strToArray("jsn-title-content"),
+        //     styleList: {
+        //         width: '100%',
+        //     }
+        // }, null, notification_element);
+
+        // if (args.title) {
+        //     title_element = createHtmlElement({classList: strToArray(options.titleClass)}, null, content_wrap_element);
+        //     title_element.append(args.title);
+        // }
 
         if (args.content) {
-            content_element = createHtmlElement({classList: strToArray(options.contentClass)}, null, notification_element);
+            content_element = createHtmlElement({
+                classList: strToArray(options.contentClass),
+                styleList: {
+                    width: '100%',
+                }
+            }, null, notification_element);
             content_element.append(args.content);
-            // notification_element.append(content_element);
         }
 
         close_element = createHtmlElement({classList: strToArray(options.closeClass)}, null, notification_element);
         close_element.innerHTML = settings.closeHtml;
-        console.log(">> notification_id", notification_id);
-        close_element.addEventListener('click', function () {
-            console.log(">> close", notification_id);
-        });
-        
-        // notification_element.append(close_element);
-        
 
+        console.log(">> 🍒", close_element.firstChild);
+
+        close_element.firstChild.style.border = '0px'
+        
+        
+        // close_element.addEventListener('click', function () {
+        //     console.log(">> close", notification_id);
+        // });
         // if (options.closeButton) {
         //     $closeElement.addClass(options.closeClass).attr('role', 'button');
         //     $toastElement.prepend($closeElement);
         // }
-
         // const userInput = '<script>alert("XSS attack!")</script>';
         // const safeText = sanitize(userInput);
-
         // var $progressElement = $('<div/>');
         // var $closeElement = $(options.closeHtml);
-
-        console.log(">> notification_container", notification_container);
-        console.log(">> notification_element", notification_element);
+        // console.log(">> notification_container", notification_container);
+        // console.log(">> notification_element", notification_element);
     }
 
     return notification;
